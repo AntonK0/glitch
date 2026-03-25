@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+
+# Env files
+.env
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# MuseScore output / generated state
+mcp-musescore/src/__pycache__/
+mcp-musescore/src/client/__pycache__/
+mcp-musescore/src/tools/__pycache__/
+mcp-musescore/src/types/__pycache__/
+
+# Logs
+*.log
+
+# Optional: Composer and cruising built artifacts
+*.wav
+*.mp3
+*.pdf
+*.mscz
