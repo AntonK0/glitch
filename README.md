@@ -26,7 +26,7 @@ This repo includes:
 1. Clone repo
 
 ```bash
-cd c:\Users\anton\code_and_projects\music_composer_assistant
+cd path/to/folder/you/want/to/clone/to
 # if not already cloned
 # git clone <your-repo-url> .
 ```
