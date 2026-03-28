@@ -65,7 +65,7 @@ async def run_optimized_musescore_agent():
         )
 
         # We provide a highly structured prompt to guide the "Batch" behavior
-        user_prompt = "Write a normal twinkle twinkle little star in major with chords"
+        user_prompt = "Write a random melody that makes sense"
 
         content = types.Content(
             role="user", parts=[types.Part.from_text(text=user_prompt)]
