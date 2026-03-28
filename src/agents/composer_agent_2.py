@@ -19,10 +19,11 @@ async def run_optimized_musescore_agent():
     load_dotenv()
 
     # Musescore Server (Runs in current environment)
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     python_314 = (
         r"C:\Users\anton\code_and_projects\glitch\glitch\venv_314\Scripts\python.exe"
     )
-    musescore_script = "mcp-musescore/server.py"
+    musescore_script = os.path.join(base_dir, "mcp-musescore", "server.py")
     if not os.path.exists(musescore_script):
         print(f"Error: {musescore_script} not found.")
         return
@@ -31,7 +32,7 @@ async def run_optimized_musescore_agent():
     python_311 = (
         r"C:\Users\anton\code_and_projects\glitch\glitch\venv_311\Scripts\python.exe"
     )
-    audio_script = "audio_mcp_server.py"
+    audio_script = os.path.join(base_dir, "src", "audio", "audio_mcp_server.py")
     if not os.path.exists(audio_script):
         print(f"Error: {audio_script} not found.")
         return

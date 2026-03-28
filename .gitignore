@@ -3,19 +3,32 @@ __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+.coverage
+htmlcov/
+nosetests.xml
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Virtual environments
 venv/
 .venv/
 ENV/
 env/
+venv_311/
+venv_314/
+venv_*/
 
 # Env files
 .env
+.env.*
+!.env.example
 
 # IDEs and editors
 .vscode/
 .idea/
+.cursor/
+*.swp
+*.swo
 *.suo
 *.user
 *.userosscache
@@ -23,16 +36,36 @@ env/
 
 # macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
 
 # Windows
 Thumbs.db
-
+Thumbs.db:encryptable
+ehthumbs.db
+Ehthumbs.db
+Desktop.ini
 
 # Logs
 *.log
+logs/
 
-# Optional: Composer and cruising built artifacts
+# Project Specific: Audio processing artifacts
+processed_temp.wav
 *.wav
 *.mp3
-*.pdf
+*.m4a
+!humming_demo.m4a
+!piano_demo.m4a
+
+# Project Specific: MuseScore files
 *.mscz
+*.mscz~
+*.mscx
+*.pdf
+*.m4a
+
+# Project Specific: MCP
+mcp-musescore/node_modules/
