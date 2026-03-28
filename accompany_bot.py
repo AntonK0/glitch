@@ -108,17 +108,19 @@ async def run_accompany_bot(user_prompt: str):
     1. Call get_score_info to see what instruments/staves exist.
     2. Call get_cursor_info to get the full score: all notes, pitches, durations, measures.
     3. Analyze the score:
+       - Solo instrument: identify the primary melodic instrument (e.g. violin, flute, piano, cello, voice)
        - Key: most frequent pitch classes across all notes
        - Tempo BPM: look for Tempo/TempoText elements. If absent, infer from character
          (nursery rhyme ~100, ballad ~70, march ~120). Always an integer, never null.
        - Time signature: from beats per measure
        - Mood and energy: is it calm, bright, tense, sad, playful?
        - Rhythmic feel: steady, syncopated, waltz, triplet-based, etc.
-       - Existing instruments
+       - Melody range: lowest to highest pitch
 
     4. Print the following:
 
     === SONG DETAILS ===
+    Solo Instrument: <e.g. "violin">
     Key: <e.g. "C major">
     Time Signature: <e.g. 4/4>
     Tempo: <BPM integer>
@@ -131,12 +133,16 @@ async def run_accompany_bot(user_prompt: str):
     <One sentence combining the song's mood/energy with the user's request: "{user_prompt}">
 
     === LYRIA ACCOMPANIMENT INSTRUCTIONS ===
-    Lyria Prompt: "<Describe ONLY: genre/style, mood, energy level, instruments to use,
-    and 'no lead melody'. Do NOT mention chords or note names — Lyria ignores them.
-    Example: 'Gentle acoustic guitar and soft strings accompaniment, calm and warm,
-    folk style, low energy, no lead melody.'>"
-    Instruments to Include: <list>
-    Instruments to Avoid: <anything that doubles the melody>
+    Lyria Prompt: "<You are writing an ACCOMPANIMENT, not background music or a standalone piece.
+    The accompaniment must support and match the solo instrument identified above.
+    Describe ONLY: accompaniment style suited to that instrument (e.g. piano left-hand arpeggios for violin,
+    plucked strings for cello, soft pads for flute), mood, energy level, and 'no lead melody'.
+    The result must sound like it is waiting for a soloist to play over it — not complete on its own.
+    Do NOT mention chords or note names — Lyria ignores them.
+    Example for violin: 'Flowing piano accompaniment with arpeggiated left hand, warm and expressive,
+    romantic style, medium energy, no lead melody, supportive texture for solo violin.'>"
+    Instruments to Include: <list — choose instruments that naturally accompany the solo instrument>
+    Instruments to Avoid: <anything that doubles or competes with the solo melody>
 
     5. Call generate_accompaniment with:
        - prompt: the Lyria Prompt from step 4
