@@ -120,6 +120,13 @@ class Backend(QObject):
         self._start_voice_live_session()
 
     @Slot()
+    def startAccompaniment(self):
+        if self._isRecording:
+            return
+        self._recording_type = "accompaniment"
+        self._start_voice_live_session()
+
+    @Slot()
     def startHumming(self):
         if self._isRecording:
             return
@@ -309,9 +316,17 @@ class Backend(QObject):
         self._append("> Recording stopped — finalizing transcription…")
 
     def _run_voice_pipeline(self, transcribed_text: str):
-        """Launch the composer agent with the transcribed text (bypasses transcribe.py)."""
-        self._append("> Running composer agent…")
-        cmd = [sys.executable, str(SCRIPTS / "composer_launch.py"), transcribed_text]
+        """Route to composer or accompaniment agent based on recording type."""
+        if self._recording_type == "accompaniment":
+            self._append("> Running accompaniment agent…")
+            cmd = [
+                sys.executable,
+                str(PROJECT_ROOT / "src" / "agents" / "accompany_agent.py"),
+                transcribed_text,
+            ]
+        else:
+            self._append("> Running composer agent…")
+            cmd = [sys.executable, str(SCRIPTS / "composer_launch.py"), transcribed_text]
         self._run_script(cmd)
 
     # ── Legacy Recording (Humming only) ───────────────────────────────────────
