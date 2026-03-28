@@ -3,6 +3,7 @@ import librosa
 import numpy as np
 import os
 import soundfile as sf
+import sys
 from notation_converter import convert_to_notation
 
 def run_crepe_transcription(audio_path, confidence_threshold=0.8, min_note_duration=0.15):
@@ -14,7 +15,7 @@ def run_crepe_transcription(audio_path, confidence_threshold=0.8, min_note_durat
     - confidence_threshold: 0.0 to 1.0. Higher = less noise/jitter (Default 0.8)
     - min_note_duration: Minimum seconds a note must last to be kept (Default 0.15s)
     """
-    print(f"Analyzing {audio_path} with CREPE (Confidence: {confidence_threshold})...")
+    print(f"Analyzing {audio_path} with CREPE (Confidence: {confidence_threshold})...", file=sys.stderr, flush=True)
     
     # 1. Load audio (CREPE requires 16kHz)
     sr_target = 16000
@@ -22,12 +23,15 @@ def run_crepe_transcription(audio_path, confidence_threshold=0.8, min_note_durat
         y, sr = librosa.load(audio_path, sr=sr_target)
     except Exception as e:
         # Fallback for m4a if system decoder fails
-        print(f"Loading failed, trying fallback...")
+        print(f"Loading failed, trying fallback...", file=sys.stderr, flush=True)
         y, sr = librosa.load(audio_path, sr=sr_target, backend='audioread')
     
     # 2. Run CREPE
     # viterbi=True helps avoid octave jumps and makes tracking smoother
-    time, frequency, confidence, activation = crepe.predict(y, sr, viterbi=True, step_size=10, verbose=False)
+    # step_size=50 speeds up processing significantly (from 10ms to 50ms)
+    print(f"--- CREPE starting predict ---", file=sys.stderr, flush=True)
+    time, frequency, confidence, activation = crepe.predict(y, sr, viterbi=True, step_size=50, verbose=False)
+    print(f"--- CREPE predict complete, frames: {len(time)} ---", file=sys.stderr, flush=True)
     
     # 3. Process the results into raw note segments
     raw_segments = []
