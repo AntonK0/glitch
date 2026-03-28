@@ -41,9 +41,11 @@ class Backend(QObject):
     # ── Internal helpers ──────────────────────────────────────────────────────
 
     def _check_ready(self):
+        ext = ".bat" if os.name == "nt" else ".sh"
+        scripts = [f"run_voice_suggest{ext}", f"run_voice_demo{ext}", f"run_hum{ext}"]
         missing = [
             s
-            for s in ["run_voice_suggest.sh", "run_voice_demo.sh", "run_hum.sh"]
+            for s in scripts
             if not (SCRIPTS / s).exists()
         ]
         self._agentReady = len(missing) == 0
@@ -54,6 +56,7 @@ class Backend(QObject):
             self._append("> Agent systems online")
 
     def _append(self, line: str):
+        print(line, flush=True)  # Reroute to terminal
         self._lastOutput = self._lastOutput + "\n" + line
         self.lastOutputChanged.emit()
 
@@ -98,6 +101,7 @@ class Backend(QObject):
         recording_type = self._recording_type
         frames = list(self._audio_frames)
         self._stop_recording()
+        self._append(f"> Audio data size: {sum(f.nbytes for f in frames)} bytes")
         threading.Thread(
             target=self._process_audio,
             args=(recording_type, frames),
@@ -141,6 +145,14 @@ class Backend(QObject):
 
     def _save_wav(self, frames: list[np.ndarray], path: str):
         data = np.concatenate(frames, axis=0)
+        # Check if the audio is almost silent (useful for debugging)
+        max_amp = np.abs(data).max()
+        if max_amp < 100: # Very low threshold for 16-bit PCM
+            print(f"--- Warning: Recording is almost silent (Max amplitude: {max_amp}) ---", flush=True)
+            self._append("> Warning: Recorded audio is very quiet or silent. Please check your microphone.")
+        else:
+            print(f"--- Recording max amplitude: {max_amp} ---", flush=True)
+            
         with wave.open(path, "wb") as wf:
             wf.setnchannels(CHANNELS)
             wf.setsampwidth(2)
@@ -157,14 +169,15 @@ class Backend(QObject):
         tmp_path = os.path.join(tempfile.gettempdir(), f"muse_{recording_type}.wav")
         self._save_wav(frames, tmp_path)
 
+        ext = ".bat" if os.name == "nt" else ".sh"
         if recording_type == "voice":
             script = (
-                "run_voice_suggest.sh"
+                f"run_voice_suggest{ext}"
                 if self._currentMode == "suggest"
-                else "run_voice_demo.sh"
+                else f"run_voice_demo{ext}"
             )
         else:
-            script = "run_hum.sh"
+            script = f"run_hum{ext}"
 
         self._run_script([str(SCRIPTS / script), tmp_path])
 
@@ -179,6 +192,7 @@ class Backend(QObject):
                 text=True,
                 env=env,
                 cwd=str(PROJECT_ROOT),
+                shell=(os.name == "nt"),
             )
             for line in proc.stdout:
                 stripped = line.rstrip()

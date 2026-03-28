@@ -1,4 +1,5 @@
 import librosa
+import sys
 
 def convert_to_notation(notes, bpm=120, resolution="16th"):
     """
@@ -34,7 +35,7 @@ def convert_to_notation(notes, bpm=120, resolution="16th"):
         1:  "16th"
     }
     
-    print(f"--- Musical Notation (BPM: {bpm}, Grid: {resolution}) ---")
+    print(f"--- Musical Notation (BPM: {bpm}, Grid: {resolution}) ---", file=sys.stderr, flush=True)
     
     quantized_output = []
     
@@ -60,7 +61,7 @@ def convert_to_notation(notes, bpm=120, resolution="16th"):
         
         note_name = librosa.midi_to_note(pitch).replace('♯', '#').replace('♭', 'b')
         
-        print(f"Meas {measure} | Beat {beat_in_measure:04.2f} | Note: {note_name:<3} | Value: {notation_name}")
+        print(f"Meas {measure} | Beat {beat_in_measure:04.2f} | Note: {note_name:<3} | Value: {notation_name}", file=sys.stderr, flush=True)
         
         quantized_output.append({
             "measure": measure,

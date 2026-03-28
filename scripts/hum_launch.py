@@ -39,7 +39,7 @@ async def main():
             server_params=StdioServerParameters(
                 command=sys.executable, args=[MUSESCORE_SERVER]
             ),
-            timeout=30.0,
+            timeout=300.0,
         )
     )
     audio_mcp = McpToolset(
@@ -47,7 +47,7 @@ async def main():
             server_params=StdioServerParameters(
                 command=PYTHON_311, args=[AUDIO_SERVER]
             ),
-            timeout=30.0,
+            timeout=300.0,
         )
     )
 
@@ -56,8 +56,7 @@ async def main():
     Process audio input into musical scores using BATCH operations.
 
     PIPELINE:
-    1. TRANSCRIPTION: Use transcribe_crepe (monophonic/vocals) or transcribe_basic_pitch
-       (polyphonic) on the provided audio file to extract notes.
+    1. TRANSCRIPTION: MUST use 'transcribe_crepe' on the provided audio file to extract notes. This is the only allowed audio processing tool.
     2. DISCOVERY: Call list_tracks once to identify available score tracks.
     3. ARCHITECTING: Map transcribed notes to measures. Verify rhythms match the time signature.
     4. ATOMIC EXECUTION: Use write_measures to write all notes in one call per instrument.
@@ -65,6 +64,7 @@ async def main():
     CONSTRAINTS:
     - No granular note calls — batch everything.
     - Follow music theory.
+    - If 'transcribe_crepe' returns an error message or says no notes were detected, inform the user clearly and DO NOT attempt to write any measures.
     - If a track is missing, call create_track first.
     """
 

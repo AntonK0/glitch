@@ -43,7 +43,7 @@ async def run_optimized_musescore_agent():
             server_params=StdioServerParameters(
                 command=python_314, args=[musescore_script]
             ),
-            timeout=30.0,
+            timeout=300.0,
         )
     )
 
@@ -52,7 +52,7 @@ async def run_optimized_musescore_agent():
             server_params=StdioServerParameters(
                 command=python_311, args=[audio_script]
             ),
-            timeout=30.0,
+            timeout=300.0,
         )
     )
 
@@ -62,7 +62,7 @@ async def run_optimized_musescore_agent():
     Your goal is to process audio input into musical scores and minimize API calls by using BATCH operations.
 
     OPERATIONAL PIPELINE:
-    1. TRANSCRIPTION: If the user provides an audio file, use 'transcribe_crepe' (for monophonic/vocals) or 'transcribe_basic_pitch' (for polyphonic/complex) to get the notes.
+    1. TRANSCRIPTION: If the user provides an audio file, MUST use 'transcribe_crepe' to get the notes. This is the only allowed audio processing tool.
     2. DISCOVERY: Call 'list_tracks' once to get IDs and current score state. Identify Tracks.
     3. ARCHITECTING: Plan the measures internally based on the transcribed notes or user request. Ensure rhythms sum correctly (e.g., 4/4 time).
     4. ATOMIC EXECUTION: Use 'write_measures' to send the entire block of notes in one call per instrument.
