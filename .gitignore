@@ -26,7 +26,6 @@ venv_*/
 # IDEs and editors
 .vscode/
 .idea/
-.cursor/
 *.swp
 *.swo
 *.suo
@@ -66,6 +65,22 @@ processed_temp.wav
 *.mscx
 *.pdf
 *.m4a
+
+# AI tools and configs
+.cursor/
+.codex/
+.gemini/
+.zed/
+.claude/
+CLAUDE.md
+.aider*
+.copilot/
+AGENTS.md
+.agents/
+skills-lock.json
+.mcp.json
+opencode.json
+config/
 
 # Project Specific: MCP
 mcp-musescore/node_modules/
