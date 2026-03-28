@@ -1,71 +1,99 @@
 import asyncio
+import os
+
 from dotenv import load_dotenv
-from mcp import StdioServerParameters
 
 # ADK Imports
 from google.adk.agents.llm_agent import Agent
-from google.adk.tools.mcp_tool import McpToolset, StdioConnectionParams # Updated import
 from google.adk.runners import InMemoryRunner
+from google.adk.tools.mcp_tool import (
+    McpToolset,
+    StdioConnectionParams,
+)
 from google.genai import types
+from mcp import StdioServerParameters
 
-# 1. Load the API key from your .env file
-load_dotenv()
 
-# 2. Configure the connection to your local MuseScore MCP server
-musescore_mcp = McpToolset(
-    connection_params=StdioConnectionParams(
-        server_params=StdioServerParameters(
-            command="python", 
-            args=["mcp-musescore/server.py"]
+async def run_optimized_musescore_agent():
+    # 1. Environment Setup
+    load_dotenv()
+
+    server_script = "mcp-musescore/server.py"
+    if not os.path.exists(server_script):
+        print(f"Error: {server_script} not found.")
+        return
+
+    # 2. Toolset Configuration
+    musescore_mcp = McpToolset(
+        connection_params=StdioConnectionParams(
+            server_params=StdioServerParameters(command="python3", args=[server_script])
         )
     )
-)
 
-# 3. Create the ADK Agent powered by Gemini (The Blueprint)
-agent = Agent(
-    model='gemini-3-flash-preview',
-    name="MuseScore_Composer",
-    instruction="""You are an expert AI music composer and orchestrator. 
-    You have access to MuseScore via an MCP server. Use your tools to navigate scores, 
-    read existing notes, and write new music. Always explain what you are about to do 
-    before executing the tool commands.""",
-    tools=[musescore_mcp]
-)
+    # 3. Architect-Level Instructions
+    # We move from "Protocol" to "Design Patterns" to reduce token bloat and errors.
+    instruction = """
+    You are a Senior Music Orchestrator. 
+    Your goal is to minimize API calls by using BATCH operations.
 
-if __name__ == "__main__":
-    print("Agent is thinking...")
+    OPERATIONAL PIPELINE:
+    1. DISCOVERY: Call 'list_tracks' once to get IDs and current score state. Identify Tracks.
+    2. ARCHITECTING: Plan the 8 measures internally. Ensure rhythms sum correctly (e.g., 4/4 time).
+    3. ATOMIC EXECUTION: Use 'write_measures' to send the entire block of notes in one call per instrument.
     
-    user_prompt = "Use the currently opened score and add harmonization."
-    
-    # 4. Initialize the Runner (The Engine)
-    runner = InMemoryRunner(agent=agent, app_name="musescore_app")
-    
-    # 5. Create a session to keep track of conversation memory
-    session = asyncio.run(runner.session_service.create_session(
-        app_name="musescore_app", 
-        user_id="local_user"
-    ))
-    
-    # 6. Format the user prompt into ADK/GenAI Content types
-    content = types.Content(
-        role="user", 
-        parts=[types.Part.from_text(text=user_prompt)]
+    CONSTRAINTS:
+    - No granular note calls. If you must add 16 notes, send them as one list to the tool.
+    - MUST follow music thoery
+    - If a track is missing, call 'create_track' before writing.
+    - Validate that your drum patterns align with the Moonlight Sonata triplets (12/8 or 4/4 triplets)
+    - Execute via batch commands only."
+    """
+
+    agent = Agent(
+        model="gemini-3-flash-preview",
+        name="MuseScore_Architect",
+        instruction=instruction,
+        tools=[musescore_mcp],
     )
-    
-    print("\nAgent Response:")
-    
-    # 7. Execute the run loop and process the event stream
-    for event in runner.run(
-        user_id="local_user", 
-        session_id=session.id, 
-        new_message=content
-    ):
-        # Extract and print the text from the event stream
-        if getattr(event, "content", None) and event.content.parts:
+
+    # 4. Engine Initialization
+    runner = InMemoryRunner(agent=agent, app_name="musescore_v2")
+
+    try:
+        session = await runner.session_service.create_session(
+            app_name="musescore_v2", user_id="local_user"
+        )
+
+        # We provide a highly structured prompt to guide the "Batch" behavior
+        user_prompt = "Write a normal twinkle twinkle little star in major with chords"
+
+        content = types.Content(
+            role="user", parts=[types.Part.from_text(text=user_prompt)]
+        )
+
+        print(f"--- Orchestrator Session {session.id} Started ---")
+
+        # 5. Execution Loop (Standard Generator)
+        for event in runner.run(
+            user_id="local_user", session_id=session.id, new_message=content
+        ):
+            if not event.content or not event.content.parts:
+                continue
+
             for part in event.content.parts:
                 if part.text:
-                    print(part.text, end="")
-    print() # Add a final newline
+                    print(part.text, end="", flush=True)
 
-    # testing pr
-    # testing pr 2
+                if part.function_call:
+                    # Visual feedback for the 'Batch' actions
+                    print(f"\n[ORCHESTRATING: {part.function_call.name}]")
+
+                if part.function_response:
+                    print("[STATUS: Success]\n")
+
+    except Exception as e:
+        print(f"\n[RUNTIME ERROR]: {str(e)}")
+
+
+if __name__ == "__main__":
+    asyncio.run(run_optimized_musescore_agent())
