@@ -1,21 +1,29 @@
-# Multi-Python Environment Project
+# AI Music Composition Agent
 
-This project uses two separate Python versions (3.11 and 3.14) to manage specific library requirements and ensure compatibility across different modules.
+This project is an AI-assisted music composition application that coordinates audio transcription, generative music logic, and MuseScore notation. It uses a dual-Python architecture to manage different library requirements.
 
 ## Project Structure
 
 ```text
 .
-├── .env                # Shared API keys and environment variables
+├── .env                # API keys and shared environment variables
 ├── .gitignore          # Git exclusion rules
-├── README.md           # Project setup and usage instructions
+├── README.md           # This file
+├── audio_parser.py     # Audio-to-MIDI transcription (Python 3.11)
+├── composer_agent.py   # Main AI orchestration logic (Python 3.14)
+├── demo_agent.py       # Demonstration and testing script (Python 3.14)
+├── mcp-musescore/      # MuseScore MCP Server and QML Plugin
 ├── venv_311/           # Virtual environment for Python 3.11
 ├── venv_314/           # Virtual environment for Python 3.14
 ├── requirements_311.txt # Dependencies for Python 3.11
-├── requirements_314.txt # Dependencies for Python 3.14
-├── script_311.py       # (Example) Script that requires Python 3.11
-└── script_314.py       # (Example) Script that requires Python 3.14
+└── requirements_314.txt # Dependencies for Python 3.14
 ```
+
+## Architecture
+
+- **Python 3.11 (Transcription)**: Handles audio processing and pitch detection using libraries like `librosa` and `basic-pitch`.
+- **Python 3.14 (Main Agent)**: Coordinates the composition task using Google ADK, Gemini, and communicating with the transcription service via MCP.
+- **MuseScore Integration**: A QML plugin that bridges the AI agent to the MuseScore notation software via WebSockets.
 
 ## Prerequisites
 
