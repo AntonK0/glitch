@@ -1,5 +1,6 @@
 import asyncio
 import os
+import sys
 
 from dotenv import load_dotenv
 
@@ -90,8 +91,7 @@ async def run_optimized_musescore_agent():
             app_name="musescore_v2", user_id="local_user"
         )
 
-        # We provide a highly structured prompt to guide the "Batch" behavior
-        user_prompt = "Listen to humming_demo.m4a and write it to the piano track."
+        user_prompt = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else "Listen to humming_demo.m4a and write it to the piano track."
 
         content = types.Content(
             role="user", parts=[types.Part.from_text(text=user_prompt)]

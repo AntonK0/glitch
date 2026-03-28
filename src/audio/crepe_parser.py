@@ -6,7 +6,7 @@ import soundfile as sf
 import sys
 from notation_converter import convert_to_notation
 
-def run_crepe_transcription(audio_path, confidence_threshold=0.8, min_note_duration=0.15):
+def run_crepe_transcription(audio_path, confidence_threshold=0.7, min_note_duration=0.15):
     """
     Uses CREPE to track pitch and groups frames into note events.
     Best for MONOPHONIC audio (vocals, single instruments).

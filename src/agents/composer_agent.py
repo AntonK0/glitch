@@ -47,6 +47,7 @@ async def run_optimized_musescore_agent():
     - No granular note calls. If you must add 16 notes, send them as one list to the tool.
     - MUST follow music thoery
     - BE SIMPLISTIC
+    - BUILD ON TOP of the current score
     - If a track is missing, call 'create_track' before writing.
     - Validate that your drum patterns align with the Moonlight Sonata triplets (12/8 or 4/4 triplets)
     - Execute via batch commands only."

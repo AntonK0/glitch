@@ -1,123 +1,110 @@
-# AI Music Composition Agent
+# Glitch - AI Music Composition Assistant
 
-This project is an AI-assisted music composition application that coordinates audio transcription, generative music logic, and MuseScore notation. It uses a dual-Python architecture to manage different library requirements.
+Glitch is an interactive, AI-powered music composition application designed to help composers brainstorm, demo, and transcribe musical ideas in real-time. By leveraging the **Gemini Live API** and advanced pitch detection, Glitch bridges the gap between vocal ideas and musical notation.
 
-## Project Structure
+## 🚀 Key Features
+
+- **🎙️ Voice Prompting**: Speak naturally to the assistant. Glitch uses the **Gemini 2.5 Flash Native Audio** model for real-time transcription and intent understanding.
+- **🎹 Intelligent Composition**: AI agents generate musical suggestions, demos, and structural ideas based on your voice or text prompts.
+- **🎸 Accompaniment Generation**: Automatically create musical accompaniments that match your composition's style and melody.
+- **🎶 Humming to Notation**: Record yourself humming or singing. Glitch uses **CREPE** (high-performance pitch tracking) to convert monophonic audio into musical notation (MIDI/Score).
+- **🎼 MuseScore Integration**: Seamlessly export and visualize your AI-generated ideas in MuseScore via a custom MCP (Model Context Protocol) bridge.
+
+## 🏛️ Architecture: Dual Virtual Environments
+
+This project uses a **dual virtual environment architecture** to manage different library requirements and Python version compatibility:
+
+1. **Python 3.11 (Transcription)**: Handles audio processing and pitch detection using libraries like `librosa` and `crepe`. This environment is dedicated to `src/audio/` scripts.
+2. **Python 3.14 (Main Agent & UI)**: Coordinates the composition task using Google Gemini APIs and manages the PySide6 UI. This is the main application environment.
+
+## 📂 Project Structure
 
 ```text
-.
-├── .env                # API keys and shared environment variables
-├── .gitignore          # Git exclusion rules
-├── README.md           # This file
-├── audio_parser.py     # Audio-to-MIDI transcription (Python 3.11)
-├── composer_agent.py   # Main AI orchestration logic (Python 3.14)
-├── demo_agent.py       # Demonstration and testing script (Python 3.14)
-├── mcp-musescore/      # MuseScore MCP Server and QML Plugin
-├── venv_311/           # Virtual environment for Python 3.11
-├── venv_314/           # Virtual environment for Python 3.14
-├── requirements_311.txt # Dependencies for Python 3.11
-└── requirements_314.txt # Dependencies for Python 3.14
+glitch/
+├── main.py                 # Application entry point (runs in venv_314)
+├── .env                    # API keys (Gemini, etc.)
+├── src/
+│   ├── ui/                 # UI Backend (PySide6) and QML interface
+│   ├── agents/             # AI orchestration (Composer, Accompaniment)
+│   └── audio/              # Pitch detection and notation conversion (runs in venv_311)
+├── scripts/                # Helper scripts for running components
+├── mcp-musescore/          # MuseScore integration bridge
+├── requirements_311.txt    # Transcription engine dependencies (Python 3.11)
+├── requirements_314.txt    # UI and Agent dependencies (Python 3.14)
+└── README.md               # You are here
 ```
 
-## Architecture
+## ⚙️ Prerequisites
 
-- **Python 3.11 (Transcription)**: Handles audio processing and pitch detection using libraries like `librosa` and `basic-pitch`.
-- **Python 3.14 (Main Agent)**: Coordinates the composition task using Google ADK, Gemini, and communicating with the transcription service via MCP.
-- **MuseScore Integration**: A QML plugin that bridges the AI agent to the MuseScore notation software via WebSockets.
+- **Python 3.11** and **Python 3.14** installed on your system.
+- **Python Launcher (`py`)** is recommended for Windows users to manage multiple versions.
+- **Gemini API Key**: Required for AI features. Place it in a `.env` file as `GOOGLE_API_KEY`.
+- **MuseScore 4**: (Optional) For notation visualization.
 
-## Prerequisites
+## 🔨 Setup & Installation
 
-- **Python 3.11** and **Python 3.14** must be installed on your system.
-- The **Python Launcher (`py`)** is recommended for Windows users to manage multiple versions.
-
-## Initial Setup
+To set up the project, you must initialize both virtual environments:
 
 ### 1. Create the Virtual Environments
 
-Run these commands from the project root depending on your operating system:
-
 #### Windows (PowerShell)
-
 ```powershell
-# Create Python 3.11 environment
+# Create environment for transcription (3.11)
 py -3.11 -m venv venv_311
 
-# Create Python 3.14 environment
+# Create environment for the main application (3.14)
 py -3.14 -m venv venv_314
 ```
 
-#### macOS / Linux (Terminal)
-
+#### macOS / Linux
 ```bash
-# Create Python 3.11 environment
+# Create environment for transcription (3.11)
 python3.11 -m venv venv_311
 
-# Create Python 3.14 environment
+# Create environment for the main application (3.14)
 python3.14 -m venv venv_314
 ```
 
 ### 2. Install Dependencies
 
-Install the specific requirements into their respective environments:
-
 #### Windows (PowerShell)
-
 ```powershell
-# Install for Python 3.11
+# Install dependencies for Python 3.11
 .\venv_311\Scripts\pip.exe install -r requirements_311.txt
 
-# Install for Python 3.14
+# Install dependencies for Python 3.14
 .\venv_314\Scripts\pip.exe install -r requirements_314.txt
 ```
 
-#### macOS / Linux (Terminal)
-
+#### macOS / Linux
 ```bash
-# Install for Python 3.11
+# Install dependencies for Python 3.11
 ./venv_311/bin/pip install -r requirements_311.txt
 
-# Install for Python 3.14
+# Install dependencies for Python 3.14
 ./venv_314/bin/pip install -r requirements_314.txt
 ```
 
-## Running Scripts
-
-To ensure you use the correct Python version and environment, call the interpreter directly from the environment's bin/Scripts folder:
-
-### Windows (PowerShell)
-
-**Run Python 3.11 script:**
-
-```powershell
-.\venv_311\Scripts\python.exe your_script_311.py
+### 3. Configure Environment
+Create a `.env` file in the root directory:
+```text
+GOOGLE_API_KEY=your_api_key_here
 ```
 
-**Run Python 3.14 script:**
+## 🏃 Running the Application
 
-```powershell
-.\venv_314\Scripts\python.exe your_script_314.py
-```
-
-### macOS / Linux (Terminal)
-
-**Run Python 3.11 script:**
+Launch the main application using the **Python 3.14** environment:
 
 ```bash
-./venv_311/bin/python your_script_311.py
+# Windows
+.\venv_314\Scripts\python.exe main.py
+
+# macOS / Linux
+./venv_314/bin/python main.py
 ```
 
-**Run Python 3.14 script:**
+The application automatically bridges to the Python 3.11 environment for transcription tasks via internal scripts.
 
-```bash
-./venv_314/bin/python your_script_314.py
-```
+## 📄 License
 
-## Development in Cursor
-
-To get the correct IntelliSense and linting for each file:
-
-1. Open the `.py` file you are working on.
-2. Press `Ctrl+Shift+P` and type **"Python: Select Interpreter"**.
-3. Select the `python` or `python.exe` located in the corresponding `venv_*/` folder:
-   - **Windows**: `venv_*/Scripts/python.exe`
-   - **macOS/Linux**: `venv_*/bin/python`
+[Insert License Information Here]

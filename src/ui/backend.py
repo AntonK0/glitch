@@ -51,6 +51,7 @@ class Backend(QObject):
         self._audio_frames: list[np.ndarray] = []
         self._recording_stream: sd.InputStream | None = None
         self._recording_type: str = ""
+        self._active_proc: subprocess.Popen | None = None
         self._isPlayingAccompaniment = False
         self._playback_stream: sd.OutputStream | None = None
 
@@ -376,7 +377,7 @@ class Backend(QObject):
             ]
         else:
             self._append("> Running composer agent…")
-            cmd = [sys.executable, str(PROJECT_ROOT / "src" / "agents" / "composer_agent.py"), transcribed_text]
+            cmd = [sys.executable, str(PROJECT_ROOT / "src" / "agents" / "composer_agent_2.py"), transcribed_text]
         self._run_script(cmd)
 
     # ── Legacy Recording (Humming only) ───────────────────────────────────────
@@ -438,7 +439,22 @@ class Backend(QObject):
 
         self._run_script([str(SCRIPTS / script), tmp_path])
 
+    def _kill_active_proc(self):
+        proc = self._active_proc
+        if proc and proc.poll() is None:
+            self._append("> Stopping previous agent…")
+            try:
+                proc.terminate()
+                proc.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+            except Exception:
+                pass
+        self._active_proc = None
+
     def _run_script(self, cmd: list[str]):
+        self._kill_active_proc()
         env = os.environ.copy()
         env.setdefault("PYTHON_314", sys.executable)
         try:
@@ -451,12 +467,16 @@ class Backend(QObject):
                 cwd=str(PROJECT_ROOT),
                 shell=(os.name == "nt"),
             )
+            self._active_proc = proc
             for line in proc.stdout:
                 stripped = line.rstrip()
                 if stripped:
                     self._append(stripped)
             proc.wait()
-            if proc.returncode != 0:
+            if proc.returncode != 0 and proc.returncode != 1:
                 self._append(f"> Script exited with code {proc.returncode}")
         except Exception as exc:
             self._append(f"> Error launching script: {exc}")
+        finally:
+            if self._active_proc is proc:
+                self._active_proc = None
