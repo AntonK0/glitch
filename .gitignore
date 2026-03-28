@@ -46,6 +46,7 @@ MANIFEST
 *.mscx
 demo_output.txt
 *.log
+*.m4a
 
 # Unit test / coverage
 htmlcov/
