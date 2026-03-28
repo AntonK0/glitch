@@ -18,19 +18,47 @@ async def run_optimized_musescore_agent():
     # 1. Environment Setup
     load_dotenv()
 
+<<<<<<< HEAD
     server_script = "mcp-musescore/server.py"
     if not os.path.exists(server_script):
         print(f"Error: {server_script} not found.")
+=======
+    # Musescore Server (Runs in current environment)
+    python_314 = r"C:\Users\anton\code_and_projects\glitch\glitch\venv_314\Scripts\python.exe"
+    musescore_script = "mcp-musescore/server.py"
+    if not os.path.exists(musescore_script):
+        print(f"Error: {musescore_script} not found.")
+        return
+
+    # Audio Processor Server (Runs in Python 3.11 environment)
+    python_311 = r"C:\Users\anton\code_and_projects\glitch\glitch\venv_311\Scripts\python.exe"
+    audio_script = "audio_mcp_server.py"
+    if not os.path.exists(audio_script):
+        print(f"Error: {audio_script} not found.")
+>>>>>>> f36485980d75f95c9bfcb69cbe6e588b49abf8e1
         return
 
     # 2. Toolset Configuration
     musescore_mcp = McpToolset(
         connection_params=StdioConnectionParams(
+<<<<<<< HEAD
             server_params=StdioServerParameters(command="python3", args=[server_script])
+=======
+            server_params=StdioServerParameters(command=python_314, args=[musescore_script]),
+            timeout=30.0
+        )
+    )
+
+    audio_mcp = McpToolset(
+        connection_params=StdioConnectionParams(
+            server_params=StdioServerParameters(command=python_311, args=[audio_script]),
+            timeout=30.0
+>>>>>>> f36485980d75f95c9bfcb69cbe6e588b49abf8e1
         )
     )
 
     # 3. Architect-Level Instructions
+<<<<<<< HEAD
     # We move from "Protocol" to "Design Patterns" to reduce token bloat and errors.
     instruction = """
     You are a Senior Music Orchestrator. 
@@ -47,13 +75,35 @@ async def run_optimized_musescore_agent():
     - If a track is missing, call 'create_track' before writing.
     - Validate that your drum patterns align with the Moonlight Sonata triplets (12/8 or 4/4 triplets)
     - Execute via batch commands only."
+=======
+    instruction = """
+    You are a Senior Music Orchestrator and Transcription Expert. 
+    Your goal is to process audio input into musical scores and minimize API calls by using BATCH operations.
+
+    OPERATIONAL PIPELINE:
+    1. TRANSCRIPTION: If the user provides an audio file, use 'transcribe_crepe' (for monophonic/vocals) or 'transcribe_basic_pitch' (for polyphonic/complex) to get the notes.
+    2. DISCOVERY: Call 'list_tracks' once to get IDs and current score state. Identify Tracks.
+    3. ARCHITECTING: Plan the measures internally based on the transcribed notes or user request. Ensure rhythms sum correctly (e.g., 4/4 time).
+    4. ATOMIC EXECUTION: Use 'write_measures' to send the entire block of notes in one call per instrument.
+    
+    CONSTRAINTS:
+    - No granular note calls. If you must add 16 notes, send them as one list to the tool.
+    - MUST follow music theory.
+    - If a track is missing, call 'create_track' before writing.
+    - Validate that your drum patterns align with the triplets if specified.
+    - Execute via batch commands only.
+>>>>>>> f36485980d75f95c9bfcb69cbe6e588b49abf8e1
     """
 
     agent = Agent(
         model="gemini-3-flash-preview",
         name="MuseScore_Architect",
         instruction=instruction,
+<<<<<<< HEAD
         tools=[musescore_mcp],
+=======
+        tools=[musescore_mcp, audio_mcp],
+>>>>>>> f36485980d75f95c9bfcb69cbe6e588b49abf8e1
     )
 
     # 4. Engine Initialization
@@ -65,7 +115,11 @@ async def run_optimized_musescore_agent():
         )
 
         # We provide a highly structured prompt to guide the "Batch" behavior
+<<<<<<< HEAD
         user_prompt = "Write a random melody that makes sense"
+=======
+        user_prompt = "Listen to humming_demo.m4a and write it to the piano track."
+>>>>>>> f36485980d75f95c9bfcb69cbe6e588b49abf8e1
 
         content = types.Content(
             role="user", parts=[types.Part.from_text(text=user_prompt)]

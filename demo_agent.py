@@ -15,13 +15,13 @@ def _parse_retry_delay(error: Exception) -> float:
 
 
 # ADK Imports
+import google.generativeai as genai
 from google.adk.agents.llm_agent import Agent
 from google.adk.runners import InMemoryRunner
 from google.adk.tools.mcp_tool import (
     McpToolset,
     StdioConnectionParams,
 )
-import google.generativeai as genai
 from google.genai import types
 from mcp import StdioServerParameters
 
@@ -128,9 +128,11 @@ async def read_score_info() -> dict:
         notes = json_match.group(1) if json_match else ""
 
         # Plain-text summary is everything after the JSON block
-        summary = full_output[json_match.end():].strip() if json_match else full_output
+        summary = full_output[json_match.end() :].strip() if json_match else full_output
 
-        print(f"\n--- Score captured: {len(notes)} chars of notes, {len(summary)} chars of summary ---\n")
+        print(
+            f"\n--- Score captured: {len(notes)} chars of notes, {len(summary)} chars of summary ---\n"
+        )
         return {"notes": notes, "summary": summary}
 
     except Exception as e:
@@ -140,10 +142,17 @@ async def read_score_info() -> dict:
 
 _NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 _DURATION_NAMES = {
-    (4, 1): "whole", (2, 1): "double whole",
-    (1, 1): "whole", (1, 2): "half", (1, 4): "quarter",
-    (1, 8): "eighth", (1, 16): "sixteenth", (1, 32): "thirty-second",
-    (3, 4): "dotted half", (3, 8): "dotted quarter", (3, 16): "dotted eighth",
+    (4, 1): "whole",
+    (2, 1): "double whole",
+    (1, 1): "whole",
+    (1, 2): "half",
+    (1, 4): "quarter",
+    (1, 8): "eighth",
+    (1, 16): "sixteenth",
+    (1, 32): "thirty-second",
+    (3, 4): "dotted half",
+    (3, 8): "dotted quarter",
+    (3, 16): "dotted eighth",
 }
 
 
@@ -168,8 +177,16 @@ def _notes_json_to_description(notes_json: str) -> str:
         measure = el.get("measure", el.get("measure_number", "?"))
         staff = el.get("staff", el.get("staff_index", "?"))
         pitch = el.get("pitch")
-        dur_num = el.get("duration", {}).get("numerator", 1) if isinstance(el.get("duration"), dict) else el.get("duration_numerator", 1)
-        dur_den = el.get("duration", {}).get("denominator", 4) if isinstance(el.get("duration"), dict) else el.get("duration_denominator", 4)
+        dur_num = (
+            el.get("duration", {}).get("numerator", 1)
+            if isinstance(el.get("duration"), dict)
+            else el.get("duration_numerator", 1)
+        )
+        dur_den = (
+            el.get("duration", {}).get("denominator", 4)
+            if isinstance(el.get("duration"), dict)
+            else el.get("duration_denominator", 4)
+        )
         is_rest = el.get("is_rest", pitch is None or pitch == 0)
 
         if measure != current_measure:
@@ -194,7 +211,9 @@ async def generate_music_with_lyria(score_info: dict) -> None:
 
     notes_json = score_info.get("notes", "")
     summary = score_info.get("summary", "")
-    note_sequence = _notes_json_to_description(notes_json) if notes_json else "(no notes captured)"
+    note_sequence = (
+        _notes_json_to_description(notes_json) if notes_json else "(no notes captured)"
+    )
 
     full_prompt = (
         f"You must play EXACTLY the following notes in EXACTLY this order with EXACTLY these durations. "
@@ -220,7 +239,8 @@ async def generate_music_with_lyria(score_info: dict) -> None:
         )
 
         audio_parts = [
-            p for c in response.candidates
+            p
+            for c in response.candidates
             for p in c.content.parts
             if p.inline_data and p.inline_data.data
         ]
