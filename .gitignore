@@ -1,0 +1,45 @@
+# Virtual environments
+venv_*/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables
+.env
+.env.example
+
+# Temporary/Output files
+*.wav
+*.mid
+*.midi
+demo_output.txt
+
+# OS-specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Cursor/VSCode settings
+.vscode/
+.cursor/
