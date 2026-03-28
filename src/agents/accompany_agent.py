@@ -94,7 +94,8 @@ async def run_accompany_bot(user_prompt: str):
 
     musescore_mcp = McpToolset(
         connection_params=StdioConnectionParams(
-            server_params=StdioServerParameters(command="python3", args=[server_script])
+            server_params=StdioServerParameters(command=sys.executable, args=[server_script]),
+            timeout=30.0,
         )
     )
 

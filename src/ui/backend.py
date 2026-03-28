@@ -39,6 +39,7 @@ class Backend(QObject):
     currentModeChanged = Signal()
     lastOutputChanged = Signal()
     transcriptionTextChanged = Signal()
+    isPlayingAccompanimentChanged = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -50,6 +51,8 @@ class Backend(QObject):
         self._audio_frames: list[np.ndarray] = []
         self._recording_stream: sd.InputStream | None = None
         self._recording_type: str = ""
+        self._isPlayingAccompaniment = False
+        self._playback_stream: sd.OutputStream | None = None
 
         # Gemini Live session state
         self._live_loop: asyncio.AbstractEventLoop | None = None
@@ -110,6 +113,10 @@ class Backend(QObject):
     def transcriptionText(self):
         return self._transcriptionText
 
+    @Property(bool, notify=isPlayingAccompanimentChanged)
+    def isPlayingAccompaniment(self):
+        return self._isPlayingAccompaniment
+
     # ── QML Slots ─────────────────────────────────────────────────────────────
 
     @Slot()
@@ -156,6 +163,49 @@ class Backend(QObject):
             self._currentMode = mode
             self.currentModeChanged.emit()
             self._append(f"> Mode: {mode.upper()}")
+
+    @Slot()
+    def playAccompaniment(self):
+        if self._isPlayingAccompaniment:
+            self._stop_accompaniment_playback()
+            return
+        wav_path = str(PROJECT_ROOT / "accompaniment.wav")
+        if not os.path.exists(wav_path):
+            self._append("> No accompaniment file found. Generate one first.")
+            return
+        threading.Thread(
+            target=self._play_accompaniment_thread,
+            args=(wav_path,),
+            daemon=True,
+        ).start()
+
+    def _play_accompaniment_thread(self, wav_path: str):
+        try:
+            with wave.open(wav_path, "rb") as wf:
+                sr = wf.getframerate()
+                ch = wf.getnchannels()
+                frames = wf.readframes(wf.getnframes())
+            audio = np.frombuffer(frames, dtype=np.int16)
+            if ch > 1:
+                audio = audio.reshape(-1, ch)
+
+            self._isPlayingAccompaniment = True
+            self.isPlayingAccompanimentChanged.emit()
+            self._append("> Playing accompaniment…")
+
+            sd.play(audio, samplerate=sr)
+            sd.wait()
+        except Exception as exc:
+            self._append(f"> Playback error: {exc}")
+        finally:
+            self._isPlayingAccompaniment = False
+            self.isPlayingAccompanimentChanged.emit()
+
+    def _stop_accompaniment_playback(self):
+        sd.stop()
+        self._isPlayingAccompaniment = False
+        self.isPlayingAccompanimentChanged.emit()
+        self._append("> Playback stopped.")
 
     # ── Gemini Live Streaming (Voice Prompt) ──────────────────────────────────
 
@@ -326,7 +376,7 @@ class Backend(QObject):
             ]
         else:
             self._append("> Running composer agent…")
-            cmd = [sys.executable, str(SCRIPTS / "composer_launch.py"), transcribed_text]
+            cmd = [sys.executable, str(PROJECT_ROOT / "src" / "agents" / "composer_agent.py"), transcribed_text]
         self._run_script(cmd)
 
     # ── Legacy Recording (Humming only) ───────────────────────────────────────

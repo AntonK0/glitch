@@ -318,6 +318,53 @@ ApplicationWindow {
                 }
             }
 
+            // ── Play Accompaniment Button ────────────────
+            Rectangle {
+                id: playAccompCard
+                Layout.fillWidth: true
+                Layout.topMargin: 12
+                height: 52
+                radius: 8
+                color: backend && backend.isPlayingAccompaniment ? "#1e3a4a" : "#22262e"
+                border.color: backend && backend.isPlayingAccompaniment ? "#00e5ff" : "#2d3139"
+                border.width: 1
+
+                Behavior on color { ColorAnimation { duration: 200 } }
+                Behavior on border.color { ColorAnimation { duration: 200 } }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
+                    onEntered: if (!(backend && backend.isPlayingAccompaniment)) playAccompCard.color = "#282c35"
+                    onExited:  if (!(backend && backend.isPlayingAccompaniment)) playAccompCard.color = "#22262e"
+                    onClicked: backend.playAccompaniment()
+                }
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 14
+                    spacing: 12
+
+                    Text {
+                        text: backend && backend.isPlayingAccompaniment ? "⏹" : "▶"
+                        font.pixelSize: 20
+                        color: "#e8eaed"
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    Text {
+                        text: backend && backend.isPlayingAccompaniment
+                              ? "STOP PLAYBACK" : "PLAY ACCOMPANIMENT"
+                        color: "#e8eaed"
+                        font.pixelSize: 14
+                        font.weight: Font.Bold
+                        font.letterSpacing: 0.5
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+                }
+            }
+
             // ── Section: LAST OUTPUT ────────────────────
             Text {
                 text: "LAST OUTPUT"

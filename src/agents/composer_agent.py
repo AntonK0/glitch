@@ -1,5 +1,6 @@
 import asyncio
 import os
+import sys
 
 from dotenv import load_dotenv
 
@@ -26,7 +27,8 @@ async def run_optimized_musescore_agent():
     # 2. Toolset Configuration
     musescore_mcp = McpToolset(
         connection_params=StdioConnectionParams(
-            server_params=StdioServerParameters(command="python3", args=[server_script])
+            server_params=StdioServerParameters(command=sys.executable, args=[server_script]),
+            timeout=30.0,
         )
     )
 
@@ -44,6 +46,7 @@ async def run_optimized_musescore_agent():
     CONSTRAINTS:
     - No granular note calls. If you must add 16 notes, send them as one list to the tool.
     - MUST follow music thoery
+    - BE SIMPLISTIC
     - If a track is missing, call 'create_track' before writing.
     - Validate that your drum patterns align with the Moonlight Sonata triplets (12/8 or 4/4 triplets)
     - Execute via batch commands only."
@@ -64,8 +67,7 @@ async def run_optimized_musescore_agent():
             app_name="musescore_v2", user_id="local_user"
         )
 
-        # We provide a highly structured prompt to guide the "Batch" behavior
-        user_prompt = "Write a random melody that makes sense"
+        user_prompt = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else "Write a random melody that makes sense"
 
         content = types.Content(
             role="user", parts=[types.Part.from_text(text=user_prompt)]
