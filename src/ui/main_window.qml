@@ -27,6 +27,7 @@ ApplicationWindow {
     property string currentMode: backend ? backend.currentMode : "suggest"
     property string lastOutput: backend ? backend.lastOutput : "> Awaiting input\n> Ready for composition assistance"
     property string recordingType: ""  // "voice" or "humming"
+    property string transcriptionText: backend ? backend.transcriptionText : ""
 
     FontLoader {
         id: monoFont
@@ -168,13 +169,18 @@ ApplicationWindow {
 
                         Text {
                             text: (root.isRecording && root.recordingType === "voice")
-                                  ? "Recording... tap to stop"
+                                  ? (root.transcriptionText.length > 0
+                                     ? root.transcriptionText
+                                     : "Listening…")
                                   : "Describe changes in\nnatural language"
-                            color: "#8b919a"
+                            color: (root.isRecording && root.recordingType === "voice")
+                                   ? "#e8eaed" : "#8b919a"
                             font.pixelSize: 13
                             lineHeight: 1.4
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
+                            maximumLineCount: 3
+                            elide: Text.ElideRight
                         }
                     }
                 }
