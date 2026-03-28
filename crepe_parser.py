@@ -68,26 +68,27 @@ def run_crepe_transcription(audio_path, confidence_threshold=0.8, min_note_durat
     return clean_notes
 
 # --- Run the Parser ---
-audio_path = "humming_demo.m4a"
+if __name__ == "__main__":
+    audio_path = "humming_demo.m4a"
 
-try:
-    # Using 0.80 for high precision
-    notes = run_crepe_transcription(audio_path, confidence_threshold=0.8, min_note_duration=0.15)
-    
-    print("\n--- Parsed Notes (CREPE High-Confidence) ---", flush=True)
-    if not notes:
-        print("No notes found with current confidence threshold. Try lowering it if the audio is quiet.")
-    
-    for start, end, pitch in notes:
-        duration = end - start
-        note_name = librosa.midi_to_note(pitch).replace('♯', '#').replace('♭', 'b')
-        print(f"Start: {start:05.2f}s | Note: {note_name:<3} | Duration: {duration:.2f}s", flush=True)
+    try:
+        # Using 0.80 for high precision
+        notes = run_crepe_transcription(audio_path, confidence_threshold=0.8, min_note_duration=0.15)
+        
+        print("\n--- Parsed Notes (CREPE High-Confidence) ---", flush=True)
+        if not notes:
+            print("No notes found with current confidence threshold. Try lowering it if the audio is quiet.")
+        
+        for start, end, pitch in notes:
+            duration = end - start
+            note_name = librosa.midi_to_note(pitch).replace('♯', '#').replace('♭', 'b')
+            print(f"Start: {start:05.2f}s | Note: {note_name:<3} | Duration: {duration:.2f}s", flush=True)
 
-    # --- Convert to Notation ---
-    print("\n" + "="*40)
-    # Adjust BPM as needed for your humming speed
-    musical_notes = convert_to_notation(notes, bpm=100)
-    print("="*40)
+        # --- Convert to Notation ---
+        print("\n" + "="*40)
+        # Adjust BPM as needed for your humming speed
+        musical_notes = convert_to_notation(notes, bpm=100)
+        print("="*40)
 
-except Exception as e:
-    print(f"Error during CREPE transcription: {e}", flush=True)
+    except Exception as e:
+        print(f"Error during CREPE transcription: {e}", flush=True)

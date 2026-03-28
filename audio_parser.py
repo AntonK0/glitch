@@ -20,47 +20,54 @@ def preprocess_audio(input_path, output_path):
     sf.write(output_path, y_norm, sr)
     return output_path
 
-# 1. Paths
-audio_path = "humming_demo.m4a"
-temp_wav_path = "processed_temp.wav"
+def run_basic_pitch_transcription(audio_path, onset_threshold=0.6, frame_threshold=0.4, minimum_note_length=120):
+    """
+    Runs Basic Pitch transcription on an audio file and returns a list of notes.
+    """
+    temp_wav_path = "processed_temp.wav"
+    
+    try:
+        processed_path = preprocess_audio(audio_path, temp_wav_path)
+    except Exception as e:
+        print(f"Warning: Pre-processing failed ({e}). Attempting direct analysis...")
+        processed_path = audio_path
 
-# 2. Pre-process (Step 2 from suggestions)
-# This converts compressed m4a to a clean wav for the AI
-try:
-    processed_path = preprocess_audio(audio_path, temp_wav_path)
-except Exception as e:
-    print(f"Warning: Pre-processing failed ({e}). Attempting direct analysis...")
-    processed_path = audio_path
+    print(f"\nAnalyzing with Basic Pitch (Tuned Accuracy)...\n")
 
-print(f"\nAnalyzing with Basic Pitch (Tuned Accuracy)...\n")
+    # Run the AI model
+    model_output, midi_data, note_events = predict(
+        processed_path,
+        onset_threshold=onset_threshold,
+        frame_threshold=frame_threshold,
+        minimum_note_length=minimum_note_length
+    )
 
-# 3. Run the AI model with Tuned Parameters (Step 1 from suggestions)
-# onset_threshold: Higher (0.6) = more confident about note starts
-# frame_threshold: Higher (0.4) = more confident about note sustain (prevents ghost notes)
-# minimum_note_length: Filters out short accidental jitters (120ms)
-model_output, midi_data, note_events = predict(
-    processed_path,
-    onset_threshold=0.6,
-    frame_threshold=0.4,
-    minimum_note_length=120
-)
+    # Sort and format the notes
+    sorted_notes = sorted(note_events, key=lambda x: x[0])
+    
+    notes_list = []
+    for note in sorted_notes:
+        start_time = float(note[0])
+        end_time = float(note[1])
+        pitch_midi = int(note[2])
+        notes_list.append((start_time, end_time, pitch_midi))
+        
+    # Cleanup
+    if os.path.exists(temp_wav_path):
+        os.remove(temp_wav_path)
+        
+    return notes_list
 
-print("--- Parsed Notes & Rhythm ---")
-
-# 4. Sort by start time and loop through the note events
-# note_events is (start_time, end_time, pitch_midi, amplitude, pitch_bends)
-sorted_notes = sorted(note_events, key=lambda x: x[0])
-
-for note in sorted_notes:
-    start_time = note[0]
-    end_time = note[1]
-    pitch_midi = note[2]
-    duration = end_time - start_time
-    readable_note = librosa.midi_to_note(pitch_midi)
-    # Ensure standard text for Windows console (replaces sharp/flat symbols if they exist)
-    clean_note = readable_note.replace('♯', '#').replace('♭', 'b')
-    print(f"Start: {start_time:05.2f}s | Note: {clean_note:<3} | Duration: {duration:.2f}s")
-
-# 5. Cleanup
-if os.path.exists(temp_wav_path):
-    os.remove(temp_wav_path)
+if __name__ == "__main__":
+    # --- Run for Demo ---
+    audio_path = "humming_demo.m4a"
+    try:
+        notes = run_basic_pitch_transcription(audio_path)
+        print("--- Parsed Notes & Rhythm ---")
+        for start_time, end_time, pitch_midi in notes:
+            duration = end_time - start_time
+            readable_note = librosa.midi_to_note(pitch_midi)
+            clean_note = readable_note.replace('♯', '#').replace('♭', 'b')
+            print(f"Start: {start_time:05.2f}s | Note: {clean_note:<3} | Duration: {duration:.2f}s")
+    except Exception as e:
+        print(f"Error during transcription: {e}")
